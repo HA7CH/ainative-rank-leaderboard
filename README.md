@@ -1,16 +1,20 @@
 # ainative-rank — public leaderboard
 
-Two lists, two different things.
+Two lists. Both populated by **opening issues** in this repo — no forks, no PRs, no branches.
 
 → Take the test: https://rank.ha7ch.com
 
 ## `participants.md`
 
-Anyone who's taken the test, regardless of grade.
+Everyone who's taken the test, regardless of grade.
 
-You add yourself here during the test (your agent opens the PR). One row, no grade. Just a proof-of-life list.
+During the test, your agent opens an issue:
 
-Row format:
+```
+gh issue create --repo HA7CH/ainative-rank-leaderboard --title "+@your-handle"
+```
+
+A bot watches for issues whose title starts with `+@` and appends a row to `participants.md`:
 
 ```
 | [@your-handle](https://github.com/your-handle) | 2026-05-17 |
@@ -18,14 +22,18 @@ Row format:
 
 ## `leaderboard.md`
 
-The ranked list, by grade.
+The ranked list, by grade. **Opt-in** — only candidates who choose to publish their grade appear.
 
-Adding yourself here is **opt-in** — after the test finishes and your grade is computed, you can update the same PR to also append a row to `leaderboard.md`. Only people who chose to publish their grade appear here.
+After the test finishes, the CLI shows the issue command. Run it if you want your grade public:
 
-Row format:
+```
+gh issue create --repo HA7CH/ainative-rank-leaderboard --title "+leaderboard @your-handle S 92.4"
+```
+
+Bot watches for `+leaderboard` issues and appends:
 
 ```
 | [@your-handle](https://github.com/your-handle) | S | 92.4 |
 ```
 
-Skip the leaderboard update if you don't want your grade public. The participants entry stays either way.
+Skip the second issue if you'd rather keep the grade private — the participants entry stays either way.
