@@ -1,0 +1,4 @@
+# Applicants
+
+| GitHub | Batch | Joined |
+|--------|-------|--------|
