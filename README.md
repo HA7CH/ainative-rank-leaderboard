@@ -8,24 +8,24 @@ Two lists, two different things.
 
 Anyone who's taken the test, regardless of grade.
 
-You add yourself here during the test (your agent will be prompted to open the PR). One row, no grade. This is the proof-of-life list — it shows up before grading finishes, so we don't know yet how you did.
+You add yourself here during the test (your agent opens the PR). One row, no grade. Just a proof-of-life list.
 
 Row format:
 
 ```
-| [@your-handle](https://github.com/your-handle) | 2026-w20 | 2026-05-17 |
+| [@your-handle](https://github.com/your-handle) | 2026-05-17 |
 ```
 
 ## `leaderboard.md`
 
 The ranked list, by grade.
 
-Adding yourself here is **opt-in** — after the test finishes and your grade is computed, the CLI will ask if you want to publish it. If yes, your agent opens a second PR. Only people who chose to publish appear.
+Adding yourself here is **opt-in** — after the test finishes and your grade is computed, you can update the same PR to also append a row to `leaderboard.md`. Only people who chose to publish their grade appear here.
 
 Row format:
 
 ```
-| [@your-handle](https://github.com/your-handle) | 2026-w20 | S | 92.4 |
+| [@your-handle](https://github.com/your-handle) | S | 92.4 |
 ```
 
-Skip it if you don't want your grade public. Nothing about your private session changes either way.
+Skip the leaderboard update if you don't want your grade public. The participants entry stays either way.
