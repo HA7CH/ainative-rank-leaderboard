@@ -4,3 +4,4 @@ Everyone who's taken the AI Native Rank test. No grades here — see [`leaderboa
 
 | GitHub | Joined |
 |--------|--------|
+| [@lawted](https://github.com/lawted) | 2026-05-17 |
