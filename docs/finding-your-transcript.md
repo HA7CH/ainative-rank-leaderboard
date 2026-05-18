@@ -19,7 +19,7 @@ It then reads the **most recently modified** `.jsonl` in that directory.
 
 This works cleanly when you drive the test through **Claude Code** (CLI **or** Desktop — both write the same JSONL into `~/.claude/projects/<encoded-cwd>/`) in the **same directory** where you ran `start`. It fails in a handful of common cases below.
 
-> **Aside — what about Desktop's other directories?** Claude Code Desktop also writes to `~/Library/Application Support/Claude/claude-code-sessions/`, `claude-code-vm/`, and `local-agent-mode-sessions/`. Those hold Desktop session metadata, the Code-mode VM state, and agent-mode / sub-agent payloads — **not** the transcript the grader reads. Don't point `CLAUDE_TRANSCRIPT_FILE` at any of them; they aren't Claude JSONL. The transcript the grader wants is still the `*.jsonl` under `~/.claude/projects/`, which Desktop is already writing for you.
+> **Aside — what about Desktop's other directories?** (macOS-verified) Claude Code Desktop also writes to `~/Library/Application Support/Claude/claude-code-sessions/`, `claude-code-vm/`, and `local-agent-mode-sessions/`. Those hold Desktop session metadata, the Code-mode VM state, and agent-mode / sub-agent payloads — **not** the transcript the grader reads. Don't point `CLAUDE_TRANSCRIPT_FILE` at any of them; they aren't Claude JSONL. The transcript the grader wants is still the `*.jsonl` under `~/.claude/projects/`, which Desktop is already writing for you.
 
 ## When the auto-locate misses
 
@@ -66,19 +66,21 @@ npx @ha7ch/ainative-rank finish
 
 The grader expects Claude Code JSONL. **Claude Code CLI and Claude Code Desktop both produce that** (they share `~/.claude/projects/<encoded-cwd>/*.jsonl`), so neither needs special handling. The real "wrong tool" cases are **Codex** (CLI or Desktop), **Cursor**, and other non-Claude agents — those write to completely different stores in completely different formats, and `locateTranscript()` returns null even when you have plenty of AI-native activity on disk.
 
-For reference, here's where those tools keep local logs on macOS:
+For reference, here's where those tools keep local logs:
 
-| Tool                            | Local store                                                                              | Format       |
+> ⚠️ **Platform note — all the paths below were verified on macOS.** The home-directory stores (`~/.claude/`, `~/.codex/`) should look the same on Linux. On Windows, expect the same *shape* under `%USERPROFILE%\` (e.g. `%USERPROFILE%\.claude\projects\`, `%USERPROFILE%\.codex\sessions\`), but I haven't tested them and Case 2 already documents one Windows-only encoding bug — assume there may be others. The `~/Library/Application Support/...` rows are **macOS-only paths**; the equivalents on Windows are under `%APPDATA%\` and on Linux under `~/.config/` or `~/.local/share/`, but the directory names may differ between platforms and I haven't verified them.
+
+| Tool                            | Local store (macOS-verified)                                                             | Format       |
 | ------------------------------- | ---------------------------------------------------------------------------------------- | ------------ |
 | Claude Code (CLI **+** Desktop) | `~/.claude/projects/<encoded-cwd>/*.jsonl`                                               | Claude JSONL |
 | Codex (CLI **+** Desktop)       | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` (active) + `~/.codex/archived_sessions/rollout-*.jsonl` (history), indexed by `~/.codex/state_5.sqlite` (`threads` table → `rollout_path`) | Codex JSONL + SQLite |
 | Cursor                          | `~/Library/Application Support/Cursor/User/workspaceStorage/<hash>/`                     | LevelDB / SQLite |
 
-> **Two paths often listed as "Codex transcripts" that aren't:**
+> **Two paths often listed as "Codex transcripts" that aren't** (macOS-verified):
 > - `~/.codex/logs_2.sqlite` is the Codex **application log** (`logs(ts, level, target, module_path, file, line, …)`), not conversation content. It can grow into the multi-GB range and looks juicy, but it doesn't contain the rollouts.
 > - `~/Library/Application Support/Codex/` only holds the Electron app's standard caches (Cookies, Local Storage, GPUCache, …) plus a sidebar config. Codex Desktop writes its sessions to `~/.codex/`, the same place the CLI uses.
 >
-> **Not in this table on purpose:** `~/Library/Application Support/Claude/IndexedDB/https_claude.ai_0.indexeddb.leveldb/` belongs to the `claude.ai` web chat surface (it's the front-end cache for the chat UI), not to Claude **Code**. It has nothing to do with grading and shouldn't be treated as a transcript source.
+> **Not in this table on purpose** (macOS-verified): `~/Library/Application Support/Claude/IndexedDB/https_claude.ai_0.indexeddb.leveldb/` belongs to the `claude.ai` web chat surface (it's the front-end cache for the chat UI), not to Claude **Code**. It has nothing to do with grading and shouldn't be treated as a transcript source.
 
 None of the non-Claude stores are drop-in replacements for `CLAUDE_TRANSCRIPT_FILE` — the grader parses Claude's JSONL shape (`uuid`, `type`, `timestamp`, …). Until non-Claude sources are supported natively (tracked in [#45](https://github.com/HA7CH/ainative-rank-leaderboard/issues/45)), the practical options are:
 
