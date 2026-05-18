@@ -17,7 +17,9 @@ By default `finish` runs `locateTranscript()`, which in turn checks:
 
 It then reads the **most recently modified** `.jsonl` in that directory.
 
-This works cleanly when you've been driving the whole test through **Claude Code CLI**, in the **same directory** where you ran `start`. It fails in a handful of common cases below.
+This works cleanly when you drive the test through **Claude Code** (CLI **or** Desktop — both write the same JSONL into `~/.claude/projects/<encoded-cwd>/`) in the **same directory** where you ran `start`. It fails in a handful of common cases below.
+
+> **Aside — what about Desktop's other directories?** Claude Code Desktop also writes to `~/Library/Application Support/Claude/claude-code-sessions/`, `claude-code-vm/`, and `local-agent-mode-sessions/`. Those hold Desktop session metadata, the Code-mode VM state, and agent-mode / sub-agent payloads — **not** the transcript the grader reads. Don't point `CLAUDE_TRANSCRIPT_FILE` at any of them; they aren't Claude JSONL. The transcript the grader wants is still the `*.jsonl` under `~/.claude/projects/`, which Desktop is already writing for you.
 
 ## When the auto-locate misses
 
@@ -60,22 +62,23 @@ $env:CLAUDE_TRANSCRIPT_FILE = "<path you just printed>"
 npx @ha7ch/ainative-rank finish
 ```
 
-### Case 3 — Your main AI tool isn't Claude Code CLI
+### Case 3 — Your main AI tool isn't Claude Code at all
 
-The grader expects Claude Code JSONL. If your real workflow lives in **Claude Desktop**, **Codex** (CLI or Desktop), **Cursor**, or another agent, `locateTranscript()` returns null even though you have plenty of AI-native activity on disk.
+The grader expects Claude Code JSONL. **Claude Code CLI and Claude Code Desktop both produce that** (they share `~/.claude/projects/<encoded-cwd>/*.jsonl`), so neither needs special handling. The real "wrong tool" cases are **Codex** (CLI or Desktop), **Cursor**, and other non-Claude agents — those write to completely different stores in completely different formats, and `locateTranscript()` returns null even when you have plenty of AI-native activity on disk.
 
 For reference, here's where those tools keep local logs on macOS:
 
-| Tool                | Local store                                                                              | Format       |
-| ------------------- | ---------------------------------------------------------------------------------------- | ------------ |
-| Claude Code CLI     | `~/.claude/projects/<encoded-cwd>/*.jsonl`                                               | Claude JSONL |
-| Claude Desktop      | `~/Library/Application Support/Claude/IndexedDB/https_claude.ai_0.indexeddb.leveldb/`    | LevelDB      |
-| Codex CLI / Desktop | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`, plus `~/.codex/logs_2.sqlite`            | Codex JSONL / SQLite |
-| Cursor              | `~/Library/Application Support/Cursor/User/workspaceStorage/<hash>/`                     | LevelDB / SQLite |
+| Tool                            | Local store                                                                              | Format       |
+| ------------------------------- | ---------------------------------------------------------------------------------------- | ------------ |
+| Claude Code (CLI **+** Desktop) | `~/.claude/projects/<encoded-cwd>/*.jsonl`                                               | Claude JSONL |
+| Codex CLI / Desktop             | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`, plus `~/.codex/logs_2.sqlite`            | Codex JSONL / SQLite |
+| Cursor                          | `~/Library/Application Support/Cursor/User/workspaceStorage/<hash>/`                     | LevelDB / SQLite |
 
-None of those are drop-in replacements for `CLAUDE_TRANSCRIPT_FILE` — the grader parses Claude's JSONL shape (`uuid`, `type`, `timestamp`, …). Until non-Claude sources are supported natively (tracked in [#45](https://github.com/HA7CH/ainative-rank-leaderboard/issues/45)), the practical options are:
+> **Not in this table on purpose:** `~/Library/Application Support/Claude/IndexedDB/https_claude.ai_0.indexeddb.leveldb/` belongs to the `claude.ai` web chat surface (it's the front-end cache for the chat UI), not to Claude **Code**. It has nothing to do with grading and shouldn't be treated as a transcript source.
 
-1. **Run the four stages through Claude Code CLI** so the test itself produces a real Claude JSONL. The other sources still inform what your agent says during stage 1, but the file the grader reads is the one Claude Code writes.
+None of the non-Claude stores are drop-in replacements for `CLAUDE_TRANSCRIPT_FILE` — the grader parses Claude's JSONL shape (`uuid`, `type`, `timestamp`, …). Until non-Claude sources are supported natively (tracked in [#45](https://github.com/HA7CH/ainative-rank-leaderboard/issues/45)), the practical options are:
+
+1. **Run the four stages through Claude Code** (CLI or Desktop — either works, they share the same JSONL store) so the test itself produces a real Claude JSONL. Your non-Claude sources can still inform what your agent says during stage 1, but the file the grader reads is the one Claude Code writes.
 2. **Convert and serve** — point `CLAUDE_TRANSCRIPT_FILE` at a JSONL you've translated from your non-Claude source into the Claude shape. Anything beyond a one-off script is out of scope here.
 
 ## Quick sanity check before `finish`
