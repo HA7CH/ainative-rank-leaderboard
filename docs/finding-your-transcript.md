@@ -71,9 +71,13 @@ For reference, here's where those tools keep local logs on macOS:
 | Tool                            | Local store                                                                              | Format       |
 | ------------------------------- | ---------------------------------------------------------------------------------------- | ------------ |
 | Claude Code (CLI **+** Desktop) | `~/.claude/projects/<encoded-cwd>/*.jsonl`                                               | Claude JSONL |
-| Codex CLI / Desktop             | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl`, plus `~/.codex/logs_2.sqlite`            | Codex JSONL / SQLite |
+| Codex (CLI **+** Desktop)       | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` (active) + `~/.codex/archived_sessions/rollout-*.jsonl` (history), indexed by `~/.codex/state_5.sqlite` (`threads` table → `rollout_path`) | Codex JSONL + SQLite |
 | Cursor                          | `~/Library/Application Support/Cursor/User/workspaceStorage/<hash>/`                     | LevelDB / SQLite |
 
+> **Two paths often listed as "Codex transcripts" that aren't:**
+> - `~/.codex/logs_2.sqlite` is the Codex **application log** (`logs(ts, level, target, module_path, file, line, …)`), not conversation content. It can grow into the multi-GB range and looks juicy, but it doesn't contain the rollouts.
+> - `~/Library/Application Support/Codex/` only holds the Electron app's standard caches (Cookies, Local Storage, GPUCache, …) plus a sidebar config. Codex Desktop writes its sessions to `~/.codex/`, the same place the CLI uses.
+>
 > **Not in this table on purpose:** `~/Library/Application Support/Claude/IndexedDB/https_claude.ai_0.indexeddb.leveldb/` belongs to the `claude.ai` web chat surface (it's the front-end cache for the chat UI), not to Claude **Code**. It has nothing to do with grading and shouldn't be treated as a transcript source.
 
 None of the non-Claude stores are drop-in replacements for `CLAUDE_TRANSCRIPT_FILE` — the grader parses Claude's JSONL shape (`uuid`, `type`, `timestamp`, …). Until non-Claude sources are supported natively (tracked in [#45](https://github.com/HA7CH/ainative-rank-leaderboard/issues/45)), the practical options are:
