@@ -37,3 +37,7 @@ Bot watches for `+leaderboard` issues and appends:
 ```
 
 Skip the second issue if you'd rather keep the grade private — the participants entry stays either way.
+
+## Troubleshooting
+
+If `finish` prints `Couldn't find a Claude Code transcript — submitting an empty session.` and you get `D 0.0`, see [`docs/finding-your-transcript.md`](./docs/finding-your-transcript.md) — covers cross-directory work, the Windows path-encoding bug, and how to use `CLAUDE_TRANSCRIPT_FILE` to point the CLI at the right JSONL before re-running `finish`.
